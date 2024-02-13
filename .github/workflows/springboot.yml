@@ -64,3 +64,5 @@ jobs:
           name: build-outputs-kubernetes
           path: |
             outputs/kubernetes/
+            template/config/
+            template/config.yaml
