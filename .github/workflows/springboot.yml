@@ -5,13 +5,10 @@ on:
       java-version:
         required: true
         type: string
-      artifact-path:
+      artifact-type:
         required: true
         type: string
       docker-dir-path:
-        required: true
-        type: string
-      docker-image-name:
         required: true
         type: string
       project-name:
@@ -20,6 +17,9 @@ on:
       image-pull-secrets:
         required: true
         type: string
+    secrets:
+      REGISTRY_URL:
+        required: true
     outputs:
       docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
 jobs:
@@ -42,14 +42,14 @@ jobs:
         run: |
           mkdir -p outputs/docker
           mkdir -p outputs/kubernetes
-          cp "${{ inputs.artifact-path }}" "outputs/docker/"
+          cp "build/libs/${{ inputs.project-name }}.${{ inputs.artifact-type }}" "outputs/docker/"
           cp -r "${{ inputs.docker-dir-path }}/*" "outputs/docker/"
       - name: Generate Version
         id: version
         run: |
           version_name=`git rev-parse --short=4 HEAD`
           date=`date "+%Y%m%d"`
-          docker_image_tag="${{ inputs.docker-image-name }}:${date}-${version_name}"
+          docker_image_tag="${{ secrets.REGISTRY_URL }}/mystery0-server/${{ inputs.project-name }}:${date}-${version_name}"
           sed "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g;s?{{DOCKER_IMAGE}}?$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
           echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
       - name: Upload Output Docker Files
