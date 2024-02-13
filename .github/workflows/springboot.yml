@@ -46,8 +46,8 @@ jobs:
         run: |
           mkdir -p outputs/docker
           mkdir -p outputs/kubernetes
-          cp "build/libs/${{ inputs.project-name }}.${{ inputs.artifact-type }}" "outputs/docker/"
-          cp -r "${{ inputs.docker-dir-path }}/*" "outputs/docker/"
+          mv "build/libs/${{ inputs.project-name }}.${{ inputs.artifact-type }}" 'outputs/docker/'
+          mv "${{ inputs.docker-dir-path }}" "outputs/docker"
       - name: Generate Version
         id: version
         run: |
