@@ -44,10 +44,10 @@ jobs:
           arguments: build -x test
       - name: Copy Artifact
         run: |
-          mkdir -p outputs/docker
+          mkdir -p outputs
           mkdir -p outputs/kubernetes
-          mv "build/libs/${{ inputs.project-name }}.${{ inputs.artifact-type }}" 'outputs/docker/'
           mv "${{ inputs.docker-dir-path }}" "outputs/docker"
+          mv "build/libs/${{ inputs.project-name }}.${{ inputs.artifact-type }}" "outputs/docker/build.${{ inputs.artifact-type }}"
       - name: Generate Version
         id: version
         run: |
