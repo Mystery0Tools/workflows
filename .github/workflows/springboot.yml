@@ -21,10 +21,12 @@ on:
       REGISTRY_URL:
         required: true
     outputs:
-      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
+      docker_image_tag: ${{ jobs.build_springboot.outputs.docker_image_tag }}
 jobs:
   build_springboot:
     runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
       - uses: actions/checkout@v4
