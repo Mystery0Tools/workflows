@@ -1,0 +1,63 @@
+name: Build Golang Application
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      image-pull-secrets:
+        required: true
+        type: string
+    secrets:
+      REGISTRY_URL:
+        required: true
+      REGISTRY_USERNAME:
+        required: true
+      REGISTRY_PASSWORD:
+        required: true
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Version
+        id: version
+        run: |
+          version_name=`git rev-parse --short=4 HEAD`
+          date=`date "+%Y%m%d"`
+          docker_image_tag="mystery0-server/${{ inputs.project-name }}:${date}-${version_name}"
+          sed "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g;s?{{DOCKER_IMAGE}}?${{ secrets.REGISTRY_URL }}/$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
+          echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Download Output Files
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs-docker
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.docker-image-tag }}
+      - name: Download Deploy Script
+        run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/22ac9f7c5fa9a5d0e65dd53ad547c03551eff78f/kube-apply.sh
+      - name: Upload Output Kubernetes Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs-kubernetes
+          path: |
+            outputs/kubernetes/deployment.yaml
+            template/config/
+            template/config.yaml
+            deploy.sh
