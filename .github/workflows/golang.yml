@@ -18,8 +18,6 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-    outputs:
-      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +47,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.docker-image-tag }}
+          tags: ${{ secrets.REGISTRY_URL }}/${{ steps.version.outputs.docker_image_tag }}
       - name: Download Deploy Script
         run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/22ac9f7c5fa9a5d0e65dd53ad547c03551eff78f/kube-apply.sh
       - name: Upload Output Kubernetes Files
