@@ -23,9 +23,9 @@ on:
     outputs:
       docker_image_tag:
         description: 'Docker Image Tag'
-        value: ${{ jobs.build_springboot.outputs.docker_image_tag }}
+        value: ${{ jobs.run.outputs.docker_image_tag }}
 jobs:
-  build_springboot:
+  run:
     runs-on: ubuntu-latest
     outputs:
       docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
