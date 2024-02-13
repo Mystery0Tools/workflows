@@ -31,7 +31,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: outputs/docker
-          file: outputs/docker/Dockerfile
+          context: build-outputs-docker/outputs/docker
+          file: build-outputs-docker/outputs/docker/Dockerfile
           push: true
           tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.docker-image-tag }}
