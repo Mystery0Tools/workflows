@@ -34,4 +34,4 @@ jobs:
           context: outputs/docker
           file: outputs/docker/Dockerfile
           push: true
-          tags: ${{ inputs.docker-image-tag }}
+          tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.docker-image-tag }}
