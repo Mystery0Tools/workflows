@@ -17,6 +17,4 @@ jobs:
         with:
           name: build-context
       - name: 部署到集群
-        run: |
-          cd build-context
-          bash deploy.sh "${{ inputs.project-name }}" "${{ inputs.deploy-namespace }}"
+        run: bash deploy.sh "${{ inputs.project-name }}" "${{ inputs.deploy-namespace }}"
