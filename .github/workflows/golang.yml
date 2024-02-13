@@ -38,10 +38,6 @@ jobs:
           registry: ${{ secrets.REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-      - name: Download Output Files
-        uses: actions/download-artifact@v4
-        with:
-          name: build-outputs-docker
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
