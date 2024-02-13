@@ -1,0 +1,22 @@
+name: Deploy
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      deploy-namespace:
+        required: true
+        type: string
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: 下载部署文件
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs-kubernetes
+      - name: 部署到集群
+        run: |
+          cd build-outputs-kubernetes
+          bash deploy.sh "${{ inputs.project-name }}" "${{ inputs.deploy-namespace }}"
