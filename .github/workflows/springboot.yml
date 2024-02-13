@@ -1,0 +1,23 @@
+name: Build SpringBoot Application
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+      - run: chmod a+x gradlew
+      - name: Build Application
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: build -x test
