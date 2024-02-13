@@ -24,6 +24,7 @@ jobs:
       - name: Generate Version
         id: version
         run: |
+          mkdir -p outputs/kubernetes
           version_name=`git rev-parse --short=4 HEAD`
           date=`date "+%Y%m%d"`
           docker_image_tag="mystery0-server/${{ inputs.project-name }}:${date}-${version_name}"
