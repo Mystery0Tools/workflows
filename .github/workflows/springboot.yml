@@ -21,7 +21,9 @@ on:
       REGISTRY_URL:
         required: true
     outputs:
-      docker_image_tag: ${{ jobs.build_springboot.outputs.docker_image_tag }}
+      docker_image_tag:
+        description: 'Docker Image Tag'
+        value: ${{ jobs.build_springboot.outputs.docker_image_tag }}
 jobs:
   build_springboot:
     runs-on: ubuntu-latest
