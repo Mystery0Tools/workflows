@@ -1,0 +1,82 @@
+name: Build SpringBoot Application
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        required: true
+        type: string
+      artifact-type:
+        required: true
+        type: string
+      docker-dir-path:
+        required: true
+        type: string
+      project-name:
+        required: true
+        type: string
+      image-pull-secrets:
+        required: true
+        type: string
+    secrets:
+      REGISTRY_URL:
+        required: true
+      NEXUS_USER:
+        required: true
+      NEXUS_PASSWORD:
+        required: true
+    outputs:
+      docker_image_tag:
+        description: 'Docker Image Tag'
+        value: ${{ jobs.run.outputs.docker_image_tag }}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    env:
+      NEXUS_USER: ${{ secrets.NEXUS_USER }}
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+      - run: chmod a+x gradlew
+      - name: Build Application
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: build -x test
+      - name: Copy Artifact
+        run: |
+          mkdir -p outputs
+          mkdir -p outputs/kubernetes
+          mv "${{ inputs.docker-dir-path }}" "outputs/docker"
+          mv "build/libs/${{ inputs.project-name }}.${{ inputs.artifact-type }}" "outputs/docker/build.${{ inputs.artifact-type }}"
+      - name: Generate Version
+        id: version
+        run: |
+          version_name=`git rev-parse --short=4 HEAD`
+          date=`date "+%Y%m%d"`
+          docker_image_tag="mystery0-server/${{ inputs.project-name }}:${date}-${version_name}"
+          sed "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g;s?{{DOCKER_IMAGE}}?$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
+          echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
+      - name: Upload Output Docker Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs-docker
+          path: |
+            outputs/docker/
+      - name: Download Deploy Script
+        run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/22ac9f7c5fa9a5d0e65dd53ad547c03551eff78f/kube-apply.sh
+      - name: Upload Output Kubernetes Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs-kubernetes
+          path: |
+            outputs/kubernetes/deployment.yaml
+            template/config/
+            template/config.yaml
+            deploy.sh
