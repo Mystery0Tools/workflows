@@ -17,7 +17,7 @@ jobs:
         with:
           name: build-outputs-kubernetes
       - name: Download Deploy Script
-        run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/9f7f75a5a611579e0dfd94db8993416ae221a4f5/kube-apply.sh
+        run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/232b1478f097b6cc0809c388368d4de1695deec4/kube-apply.sh
       - name: 替换文本
         run: |
           sed -i "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g" template/config.yaml
