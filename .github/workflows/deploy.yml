@@ -16,5 +16,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-outputs-kubernetes
+      - name: Download Deploy Script
+        run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/9f7f75a5a611579e0dfd94db8993416ae221a4f5/kube-apply.sh
+      - name: 替换文本
+        run: |
+          sed -i "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g" template/config.yaml
+          sed -i "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g" outputs/kubernetes/deployment.yaml
+          mv template/config.yaml kustomization.yaml
+          mv outputs/kubernetes/deployment.yaml deployment.yaml
       - name: 部署到集群
         run: bash deploy.sh "${{ inputs.project-name }}" "${{ inputs.deploy-namespace }}"
