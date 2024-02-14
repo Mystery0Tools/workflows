@@ -5,6 +5,10 @@ on:
       project-name:
         required: true
         type: string
+      platform:
+        required: false
+        type: string
+        default: "linux/amd64"
     secrets:
       REGISTRY_USERNAME:
         required: true
@@ -35,6 +39,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
+          platform: ${{ inputs.platform }}
           context: .
           file: Dockerfile
           push: true
