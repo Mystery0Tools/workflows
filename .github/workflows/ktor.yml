@@ -38,7 +38,6 @@ jobs:
       - name: Build Application
         uses: gradle/actions/setup-gradle@v3
         with:
-          cache-disabled: true
           arguments: installDist -x test
           cache-disabled: true
       - name: Copy Artifact
