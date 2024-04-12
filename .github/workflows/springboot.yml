@@ -43,6 +43,7 @@ jobs:
         with:
           cache-disabled: true
           arguments: build -x test
+          cache-disabled: true
       - name: Copy Artifact
         run: |
           mkdir -p outputs

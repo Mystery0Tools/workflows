@@ -35,6 +35,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.docker-image-tag }}
+          no-cache: true
       - uses: geekyeggo/delete-artifact@v4
         with:
           name: build-outputs-docker

@@ -44,6 +44,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ steps.version.outputs.docker_image_tag }}
+          no-cache: true
       - name: Upload Output Kubernetes Files
         uses: actions/upload-artifact@v4
         with:

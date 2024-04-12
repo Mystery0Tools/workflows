@@ -42,6 +42,7 @@ jobs:
           registry: ${{ secrets.REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
+          no-cache: true
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
