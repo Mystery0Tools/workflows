@@ -42,7 +42,6 @@ jobs:
           registry: ${{ secrets.REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-          no-cache: true
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -51,6 +50,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.REGISTRY_URL }}/${{ steps.version.outputs.docker_image_tag }}
+          no-cache: true
       - name: Upload Output Kubernetes Files
         uses: actions/upload-artifact@v4
         with:
