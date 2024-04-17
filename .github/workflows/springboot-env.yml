@@ -48,8 +48,8 @@ jobs:
       - name: Build Application
         uses: gradle/actions/setup-gradle@v3
         with:
-          arguments: build -x test
           cache-disabled: true
+      - run: ./gradlew build -x test
       - name: Copy Artifact
         run: |
           mkdir -p outputs
