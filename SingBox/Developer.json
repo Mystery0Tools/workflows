@@ -5,7 +5,8 @@
         "f-droid.org",
         "astah.net",
         "get.helm.sh",
-        "k8slens.dev"
+        "k8slens.dev",
+        "ktor.io"
       ]
     },
     {
@@ -42,7 +43,8 @@
         ".vercel.app",
         ".vercel.com",
         ".traefik.io",
-        ".vuetifyjs.com"
+        ".vuetifyjs.com",
+        ".ktor.io"
       ]
     }
   ],
