@@ -44,13 +44,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           cache-disabled: true
-      - run: ./gradlew installDist -x test
+      - run: ./gradlew buildFatJar -x test
       - name: Copy Artifact
         run: |
           mkdir -p outputs
           mkdir -p outputs/kubernetes
           mv "${{ inputs.docker-dir-path }}" "outputs/docker"
-          mv "build/install/${{ inputs.project-name }}" "outputs/docker/app"
+          mv "build/libs/app.jar" "outputs/docker/app.jar"
       - name: Generate Version
         id: version
         run: |
