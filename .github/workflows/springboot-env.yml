@@ -23,7 +23,7 @@ on:
         type: string
         default: "tencent"
     secrets:
-      REGISTRY_URL:
+      PULL_URL:
         required: true
       NEXUS_USER:
         required: true
