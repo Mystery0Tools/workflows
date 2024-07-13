@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "domain": [
+        "minecraft.fandom.com",
+        "digminecraft.com",
+        "internetdownloadmanager.com",
+        "typora.io",
+        "arc.net",
+        "xda-developers.com"
+      ]
+    },
+    {
+      "domain_suffix": [
+        ".typora.io",
+        ".arc.net"
+      ]
+    }
+  ],
+  "version": 1
+}

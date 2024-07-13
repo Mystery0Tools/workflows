@@ -1,0 +1,50 @@
+{
+  "rules": [
+    {
+      "domain": [
+        "f-droid.org",
+        "astah.net",
+        "get.helm.sh",
+        "k8slens.dev"
+      ]
+    },
+    {
+      "domain_suffix": [
+        ".bintray.com",
+        ".apache.org",
+        ".gitlab.com",
+        ".gitlab.io",
+        ".jitpack.io",
+        ".maven.org",
+        ".mvnrepository.com",
+        ".reddit.com",
+        ".redhat.com",
+        ".sonatype.org",
+        ".sourcegraph.com",
+        ".spring.io",
+        ".stackoverflow.com",
+        ".gradle.org",
+        ".ubuntu.com",
+        ".debian.org",
+        ".pkgs.tailscale.com",
+        ".fontawesome.com",
+        ".jsdelivr.net",
+        ".figma.com",
+        ".downloads.gradle-dn.com",
+        ".bootstrapcdn.com",
+        ".unpkg.com",
+        ".k8s.io",
+        ".sparklabs.com",
+        ".cloudfront.net",
+        ".workers.dev",
+        ".k8slens.dev",
+        ".kubernetes.io",
+        ".vercel.app",
+        ".vercel.com",
+        ".traefik.io",
+        ".vuetifyjs.com"
+      ]
+    }
+  ],
+  "version": 1
+}
