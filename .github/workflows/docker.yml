@@ -2,7 +2,7 @@ name: Build & Push Docker Image
 on:
   workflow_call:
     inputs:
-      image-path:
+      docker-image-tag:
         required: true
         type: string
     secrets:
@@ -34,7 +34,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ inputs.image-path }}
+          tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.docker-image-tag }}
           no-cache: true
       - uses: geekyeggo/delete-artifact@v4
         with:
