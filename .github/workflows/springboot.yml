@@ -14,9 +14,14 @@ on:
       project-name:
         required: true
         type: string
-      image-pull-secrets:
-        required: true
+      image-namespace:
+        required: false
         type: string
+        default: "k3ss"
+      image-pull-secrets:
+        required: false
+        type: string
+        default: "tencent"
     secrets:
       REGISTRY_URL:
         required: true
@@ -54,9 +59,10 @@ jobs:
         run: |
           version_name=`git rev-parse --short=4 HEAD`
           date=`date "+%Y%m%d"`
-          docker_image_tag="k3ss/${{ inputs.project-name }}:${date}-${version_name}"
-          sed "s?{{DOCKER_IMAGE}}?${{ secrets.REGISTRY_URL }}/$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
-          echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
+          build_image_tag="${{ secrets.REGISTRY_URL }}/${{ inputs.image-namespace }}/${{ inputs.project-name }}:${date}-${version_name}"
+          pull_image_tag="${{ secrets.PULL_URL }}/${{ inputs.image-namespace }}/${{ inputs.project-name }}:${date}-${version_name}"
+          sed "s?{{DOCKER_IMAGE}}?$pull_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets }}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
+          echo "build_image_tag=$build_image_tag" >> $GITHUB_OUTPUT
       - name: Upload Output Docker Files
         uses: actions/upload-artifact@v4
         with:
