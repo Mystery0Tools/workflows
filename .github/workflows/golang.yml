@@ -31,7 +31,7 @@ jobs:
           mkdir -p outputs/kubernetes
           version_name=`git rev-parse --short=4 HEAD`
           date=`date "+%Y%m%d"`
-          docker_image_tag="mystery0-server/${{ inputs.project-name }}:${date}-${version_name}"
+          docker_image_tag="k3ss/${{ inputs.project-name }}:${date}-${version_name}"
           sed "s?{{DOCKER_IMAGE}}?${{ secrets.REGISTRY_URL }}/$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
           echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
       - uses: docker/setup-qemu-action@v3
