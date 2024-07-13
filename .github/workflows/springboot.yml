@@ -25,6 +25,8 @@ on:
     secrets:
       REGISTRY_URL:
         required: true
+      PULL_URL:
+        required: true
     outputs:
       docker_image_tag:
         description: 'Docker Image Tag'
