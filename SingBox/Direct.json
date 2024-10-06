@@ -26,7 +26,10 @@
     },
     {
       "domain": [
-        "router.asus.com"
+        "router.asus.com",
+        "s2.loli.net",
+        "npm.elemecdn.com",
+        "cdn.shopify.com"
       ]
     },
     {
@@ -42,7 +45,9 @@
         "tendawifi.com",
         "zte.home",
         "cloudfront.net",
-        "immersivetranslate.com"
+        "immersivetranslate.com",
+        "xiaoya.pro",
+        "w3schools.com"
       ]
     }
   ],
