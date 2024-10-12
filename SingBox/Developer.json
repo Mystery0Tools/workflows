@@ -44,7 +44,9 @@
         ".vercel.com",
         ".traefik.io",
         ".vuetifyjs.com",
-        ".ktor.io"
+        ".ktor.io",
+        ".sourceforge.net",
+        ".orbstack.dev"
       ]
     }
   ],
