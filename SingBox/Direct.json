@@ -29,7 +29,8 @@
         "router.asus.com",
         "s2.loli.net",
         "npm.elemecdn.com",
-        "cdn.shopify.com"
+        "cdn.shopify.com",
+        "cn.patch.battle.net"
       ]
     },
     {
@@ -48,7 +49,7 @@
         "immersivetranslate.com",
         "xiaoya.pro",
         "w3schools.com",
-        "cn.patch.battle.net",
+        "patch.battle.net",
         "ithome.com"
       ]
     }
