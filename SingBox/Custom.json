@@ -8,7 +8,8 @@
         "typora.io",
         "arc.net",
         "xda-developers.com",
-        "chat-ai.logcg.com"
+        "chat-ai.logcg.com",
+        "rclone.org"
       ]
     },
     {
@@ -16,7 +17,8 @@
         ".typora.io",
         ".arc.net",
         ".duckduckgo.com",
-        ".icloudnative.io"
+        ".icloudnative.io",
+        ".rclone.org"
       ]
     }
   ],
