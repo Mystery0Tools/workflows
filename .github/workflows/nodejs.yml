@@ -1,0 +1,70 @@
+name: Build NodeJs Application
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      build-cmd:
+        required: true
+        type: string
+      docker-dir-path:
+        required: true
+        type: string
+      image-namespace:
+        required: false
+        type: string
+        default: "k3ss"
+      image-pull-secrets:
+        required: false
+        type: string
+        default: "tencent"
+    secrets:
+      REGISTRY_URL:
+        required: true
+      REGISTRY_USERNAME:
+        required: true
+      REGISTRY_PASSWORD:
+        required: true
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+    steps:
+      - uses: actions/checkout@v4
+      - run: "${{ inputs.build-cmd }}"
+      - name: Generate Version
+        id: version
+        run: |
+          mkdir -p outputs/kubernetes
+          version_name=`git rev-parse --short=4 HEAD`
+          date=`date "+%Y%m%d"`
+          docker_image_tag="${{ inputs.image-namespace }}/${{ inputs.project-name }}:${date}-${version_name}"
+          sed "s?{{DOCKER_IMAGE}}?${{ secrets.PULL_URL }}/$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
+          echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
+      - name: Copy Artifact
+        run: |
+          mkdir -p outputs
+          mkdir -p outputs/kubernetes
+          mv "${{ inputs.docker-dir-path }}" "outputs/docker"
+          mv "dist" "outputs/docker/dist"
+      - name: Generate Version
+        id: version
+        run: |
+          version_name=`git rev-parse --short=4 HEAD`
+          date=`date "+%Y%m%d"`
+          docker_image_tag="${{ inputs.image-namespace }}/${{ inputs.project-name }}:${date}-${version_name}"
+          sed "s?{{DOCKER_IMAGE}}?${{ secrets.PULL_URL }}/$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
+          echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
+      - name: Upload Output Docker Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs-docker
+          path: |
+            outputs/docker/
+      - name: Upload Output Kubernetes Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs-kubernetes
+          path: |
+            outputs/kubernetes/deployment.yaml
