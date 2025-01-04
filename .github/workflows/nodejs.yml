@@ -33,15 +33,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: "${{ inputs.build-cmd }}"
-      - name: Generate Version
-        id: version
-        run: |
-          mkdir -p outputs/kubernetes
-          version_name=`git rev-parse --short=4 HEAD`
-          date=`date "+%Y%m%d"`
-          docker_image_tag="${{ inputs.image-namespace }}/${{ inputs.project-name }}:${date}-${version_name}"
-          sed "s?{{DOCKER_IMAGE}}?${{ secrets.PULL_URL }}/$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
-          echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
       - name: Copy Artifact
         run: |
           mkdir -p outputs
