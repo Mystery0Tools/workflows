@@ -29,6 +29,8 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+    outputs:
+      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
       - uses: actions/checkout@v4
