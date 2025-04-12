@@ -6,7 +6,8 @@
         "astah.net",
         "get.helm.sh",
         "k8slens.dev",
-        "ktor.io"
+        "ktor.io",
+        "pnpm.io"
       ]
     },
     {
@@ -47,7 +48,8 @@
         ".vuetifyjs.com",
         ".ktor.io",
         ".sourceforge.net",
-        ".orbstack.dev"
+        ".orbstack.dev",
+        ".pnpm.io"
       ]
     }
   ],
