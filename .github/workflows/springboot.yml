@@ -44,7 +44,7 @@ jobs:
           distribution: 'temurin'
       - run: chmod a+x gradlew
       - name: Build Application
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           cache-disabled: true
       - run: ./gradlew build -x test
