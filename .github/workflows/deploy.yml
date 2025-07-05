@@ -20,7 +20,7 @@ jobs:
         run: wget -O deploy.sh https://gist.githubusercontent.com/Mystery00/6842ae8d787c47361ee83406e0d73f03/raw/985d527e8310057eba71f29afdafdd1f1b059a3f/kube-apply.sh
       - name: 替换文本
         run: |
-          if [ -f template/config.yaml];then
+          if [ -f template/config.yaml ];then
             sed -i "s/{{PROJECT_NAME}}/${{ inputs.project-name }}/g" template/config.yaml
             mv template/config.yaml kustomization.yaml
           fi
