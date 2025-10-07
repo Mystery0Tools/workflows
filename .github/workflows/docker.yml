@@ -39,3 +39,9 @@ jobs:
       - uses: geekyeggo/delete-artifact@v4
         with:
           name: build-outputs-docker
+      - name: Sync image
+        run: |
+          apt-get update && apt-get install -y curl
+          image_name=$(echo "${{ inputs.docker-image-tag }}" | cut -d: -f1)
+          image_tag=$(echo "${{ inputs.docker-image-tag }}" | cut -d: -f2)
+          curl -X PUT "https://sync.image.mystery0.vip/image?image=$image_name&tag=$image_tag"
