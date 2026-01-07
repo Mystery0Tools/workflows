@@ -20,6 +20,8 @@ on:
     secrets:
       REGISTRY_URL:
         required: true
+      PULL_URL:
+        required: true
       REGISTRY_USERNAME:
         required: true
       REGISTRY_PASSWORD:
