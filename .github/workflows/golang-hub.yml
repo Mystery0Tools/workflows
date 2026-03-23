@@ -14,22 +14,144 @@ on:
         required: true
       REGISTRY_PASSWORD:
         required: true
+
 jobs:
-  run:
+  prepare:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'ci skip')"
+    outputs:
+      docker_image_tag: ${{ steps.version.outputs.docker_image_tag }}
+      multi_platform: ${{ steps.detect.outputs.multi_platform }}
+      matrix: ${{ steps.detect.outputs.matrix }}
+      single_runner: ${{ steps.detect.outputs.single_runner }}
+      need_qemu: ${{ steps.detect.outputs.need_qemu }}
     steps:
       - uses: actions/checkout@v4
       - name: Generate Version
         id: version
         run: |
           mkdir -p outputs/kubernetes
-          version_name=`git rev-parse --short=4 HEAD`
-          date=`date "+%Y%m%d"`
+          version_name=$(git rev-parse --short=4 HEAD)
+          date=$(date "+%Y%m%d")
           docker_image_tag="mystery0/${{ inputs.project-name }}:${date}-${version_name}"
           sed "s?{{DOCKER_IMAGE}}?$docker_image_tag?g;s/{{IMAGE_PULL_SECRETS}}/${{ inputs.image-pull-secrets}}/g" template/deployment.yaml > outputs/kubernetes/deployment.yaml
           echo "docker_image_tag=$docker_image_tag" >> $GITHUB_OUTPUT
+      - name: Detect platforms
+        id: detect
+        run: |
+          PLATFORMS="${{ inputs.platforms }}"
+          HAS_AMD64=false
+          HAS_ARM64=false
+          IFS=',' read -ra PLATFORM_LIST <<< "$PLATFORMS"
+          for p in "${PLATFORM_LIST[@]}"; do
+            p=$(echo "$p" | xargs)
+            if [[ "$p" == "linux/amd64" ]]; then HAS_AMD64=true; fi
+            if [[ "$p" == "linux/arm64" ]]; then HAS_ARM64=true; fi
+          done
+          if [[ "$HAS_AMD64" == "true" && "$HAS_ARM64" == "true" ]]; then
+            echo "multi_platform=true" >> $GITHUB_OUTPUT
+            MATRIX='{"include":[{"platform":"linux/amd64","runner":"ubuntu-latest"},{"platform":"linux/arm64","runner":"ubuntu-24.04-arm"}]}'
+            echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+            echo "single_runner=" >> $GITHUB_OUTPUT
+            echo "need_qemu=" >> $GITHUB_OUTPUT
+          elif [[ "$HAS_ARM64" == "true" ]]; then
+            # 仅 arm64：直接跑原生 arm64 runner，无需 qemu
+            echo "multi_platform=false" >> $GITHUB_OUTPUT
+            echo "matrix={}" >> $GITHUB_OUTPUT
+            echo "single_runner=ubuntu-24.04-arm" >> $GITHUB_OUTPUT
+            echo "need_qemu=false" >> $GITHUB_OUTPUT
+          else
+            # 仅 amd64 或其他平台：跑 amd64 runner，需要 qemu 模拟其他架构
+            echo "multi_platform=false" >> $GITHUB_OUTPUT
+            echo "matrix={}" >> $GITHUB_OUTPUT
+            echo "single_runner=ubuntu-latest" >> $GITHUB_OUTPUT
+            echo "need_qemu=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Upload Output Kubernetes Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs-kubernetes
+          path: |
+            outputs/kubernetes/deployment.yaml
+            template/config/
+            template/config.yaml
+            deploy.sh
+
+  # 多平台路径：amd64 和 arm64 分别在原生 runner 上编译，各自 push by digest
+  build:
+    needs: prepare
+    if: needs.prepare.result == 'success' && needs.prepare.outputs.multi_platform == 'true'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare platform safe name
+        id: platform
+        run: echo "safe_name=$(echo '${{ matrix.platform }}' | tr '/' '-')" >> $GITHUB_OUTPUT
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=mystery0/${{ inputs.project-name }},push-by-digest=true,name-canonical=true,push=true
+          no-cache: true
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ steps.platform.outputs.safe_name }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # 合并各平台 digest，创建 manifest list 并推送最终 tag
+  merge:
+    needs: [prepare, build]
+    if: needs.prepare.result == 'success' && needs.prepare.outputs.multi_platform == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            -t ${{ needs.prepare.outputs.docker_image_tag }} \
+            $(printf 'mystery0/${{ inputs.project-name }}@sha256:%s ' *)
+
+  # 单平台路径：单 amd64 用 ubuntu-latest+qemu，单 arm64 直接用原生 arm64 runner
+  build-single:
+    needs: prepare
+    if: needs.prepare.result == 'success' && needs.prepare.outputs.multi_platform != 'true'
+    runs-on: ${{ needs.prepare.outputs.single_runner }}
+    steps:
+      - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
+        if: needs.prepare.outputs.need_qemu == 'true'
       - uses: docker/setup-buildx-action@v3
       - name: Login to Docker Registry
         uses: docker/login-action@v3
@@ -43,14 +165,5 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ steps.version.outputs.docker_image_tag }}
+          tags: ${{ needs.prepare.outputs.docker_image_tag }}
           no-cache: true
-      - name: Upload Output Kubernetes Files
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-outputs-kubernetes
-          path: |
-            outputs/kubernetes/deployment.yaml
-            template/config/
-            template/config.yaml
-            deploy.sh
