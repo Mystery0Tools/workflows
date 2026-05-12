@@ -19,6 +19,10 @@ on:
         required: false
         type: string
         default: "tencent"
+      node-js-version:
+        required: false
+        type: string
+        default: "latest"
     secrets:
       PULL_URL:
         required: true
@@ -38,6 +42,8 @@ jobs:
         uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
+        with:
+          node-version: "${{ inputs.node-js-version }}"
       - run: "${{ inputs.build-cmd }}"
       - name: Copy Artifact
         run: |
