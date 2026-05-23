@@ -26,6 +26,10 @@ on:
         required: true
       REGISTRY_PASSWORD:
         required: true
+      IMAGE_SYNC_URL:
+        required: true
+      IMAGE_SYNC_TOKEN:
+        required: true
 jobs:
   run:
     runs-on: ubuntu-latest
