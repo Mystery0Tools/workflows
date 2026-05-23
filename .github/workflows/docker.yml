@@ -41,7 +41,7 @@ jobs:
         env:
           IMAGE_SYNC_URL: ${{ secrets.IMAGE_SYNC_URL }}
           IMAGE_SYNC_TOKEN: ${{ secrets.IMAGE_SYNC_TOKEN }}
-          IMAGE_NAME: k3ss/xhu-jwc:${{ env.IMAGE_TAG }}
+          IMAGE_NAME: ${{ inputs.docker-image-tag }}
         run: |
           set -euo pipefail
 
