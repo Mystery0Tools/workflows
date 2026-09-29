@@ -22,6 +22,10 @@ on:
         required: true
       REGISTRY_PASSWORD:
         required: true
+      IMAGE_SYNC_URL:
+        required: true
+      IMAGE_SYNC_TOKEN:
+        required: true
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -54,6 +58,62 @@ jobs:
           push: true
           tags: ${{ secrets.REGISTRY_URL }}/${{ steps.version.outputs.docker_image_tag }}
           no-cache: true
+      - name: Trigger image sync
+        id: image_sync
+        env:
+          IMAGE_SYNC_URL: ${{ secrets.IMAGE_SYNC_URL }}
+          IMAGE_SYNC_TOKEN: ${{ secrets.IMAGE_SYNC_TOKEN }}
+          IMAGE_NAME: ${{ steps.version.outputs.docker_image_tag }}
+        run: |
+          set -euo pipefail
+
+          response="$(curl -fsS -X POST "${IMAGE_SYNC_URL}/api/sync" \
+            -H "Authorization: Bearer ${IMAGE_SYNC_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"image\":\"${IMAGE_NAME}\"}")"
+
+          echo "${response}"
+
+          task_id="$(echo "${response}" | jq -r '.taskId')"
+          if [ -z "${task_id}" ] || [ "${task_id}" = "null" ]; then
+            echo "Failed to read taskId from image-sync response" >&2
+            exit 1
+          fi
+
+          echo "task_id=${task_id}" >> "${GITHUB_OUTPUT}"
+      - name: Wait image sync
+        env:
+          IMAGE_SYNC_URL: ${{ secrets.IMAGE_SYNC_URL }}
+          IMAGE_SYNC_TOKEN: ${{ secrets.IMAGE_SYNC_TOKEN }}
+          TASK_ID: ${{ steps.image_sync.outputs.task_id }}
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 90); do
+            response="$(curl -fsS "${IMAGE_SYNC_URL}/api/sync/${TASK_ID}/done" \
+              -H "Authorization: Bearer ${IMAGE_SYNC_TOKEN}")"
+
+            echo "${response}"
+
+            done="$(echo "${response}" | jq -r '.done')"
+            success="$(echo "${response}" | jq -r '.success')"
+            status="$(echo "${response}" | jq -r '.status')"
+
+            if [ "${done}" = "true" ]; then
+              if [ "${success}" = "true" ]; then
+                echo "Image sync succeeded"
+                exit 0
+              fi
+
+              echo "Image sync failed with status: ${status}" >&2
+              exit 1
+            fi
+
+            sleep 10
+          done
+
+          echo "Timed out waiting for image sync" >&2
+          exit 1
       - name: Upload Output Kubernetes Files
         uses: actions/upload-artifact@v4
         with:
